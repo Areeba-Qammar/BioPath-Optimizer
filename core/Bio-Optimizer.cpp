@@ -70,6 +70,5 @@ int main() {
 
     BioPathOptimizer engine(5, mock_fuel);
     engine.run();
-
     return 0;
 }
