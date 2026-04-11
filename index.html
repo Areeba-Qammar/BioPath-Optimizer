@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍃 BioPath Optimizer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0e1117;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0a1a0a 0%, #0e2010 100%);
+    border-bottom: 1px solid #1a4a2a;
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  header h1 { font-size: 1.6rem; font-weight: 600; color: #00ffcc; }
+  header p  { font-size: 0.9rem; color: #80b090; margin-top: 2px; }
+
+  .bio-banner {
+    background: #0d2a1a;
+    border-left: 4px solid #00cc88;
+    padding: 0.8rem 2rem;
+    font-size: 0.88rem;
+    color: #90d4a8;
+  }
+  .bio-banner strong { color: #00ffcc; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 120px);
+  }
+
+  /* ── Sidebar ─────────────────────────────────── */
+  .sidebar {
+    background: #12181f;
+    border-right: 1px solid #1e2a1e;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+  }
+  .sidebar h2 { font-size: 0.8rem; text-transform: uppercase;
+                 letter-spacing: 0.08em; color: #607060; }
+
+  label { display: block; font-size: 0.82rem; color: #90a090; margin-bottom: 4px; }
+
+  input[type=range] {
+    width: 100%; accent-color: #00cc88;
+    height: 4px; cursor: pointer;
+  }
+  .slider-row { display: flex; justify-content: space-between;
+                font-size: 0.78rem; color: #607060; margin-top: 2px; }
+
+  .run-btn {
+    background: #00cc88;
+    color: #001a0e;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .run-btn:hover   { background: #00ffaa; }
+  .run-btn:active  { transform: scale(0.97); }
+  .run-btn:disabled { background: #1e3a2e; color: #406050; cursor: not-allowed; }
+
+  .metric-box {
+    background: #0a1a10;
+    border: 1px solid #1a3a2a;
+    border-radius: 8px;
+    padding: 0.9rem;
+  }
+  .metric-box .val { font-size: 1.4rem; font-weight: 600; color: #00ffcc; }
+  .metric-box .lbl { font-size: 0.75rem; color: #607060; margin-top: 2px; }
+
+  .route-display {
+    background: #0a1a10;
+    border: 1px solid #1a3a2a;
+    border-radius: 8px;
+    padding: 0.8rem;
+    font-size: 0.78rem;
+    color: #80d4a0;
+    font-family: monospace;
+    line-height: 1.8;
+    word-break: break-all;
+    min-height: 50px;
+  }
+
+  /* ── Main ─────────────────────────────────────── */
+  .main {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .card {
+    background: #12181f;
+    border: 1px solid #1e2a1e;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+  }
+  .card-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #607060;
+    margin-bottom: 0.8rem;
+  }
+
+  .charts-row { display: grid; grid-template-columns: 3fr 2fr; gap: 1.2rem; }
+
+  canvas { width: 100% !important; }
+
+  #mapCanvas {
+    width: 100%;
+    border-radius: 8px;
+    background: #0a1205;
+    display: block;
+  }
+
+  .progress-wrap {
+    height: 4px;
+    background: #1e2a1e;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+  .progress-bar {
+    height: 100%;
+    background: #00cc88;
+    width: 0%;
+    transition: width 0.1s;
+    border-radius: 2px;
+  }
+  .status-text { font-size: 0.8rem; color: #607060; margin-top: 4px; }
+
+  .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🍃 BioPath Optimizer</h1>
+    <p>Ant Colony Optimization &nbsp;·&nbsp; C++ Algorithm &nbsp;·&nbsp; AlgoFest 2026</p>
+  </div>
+</header>
+
+<div class="bio-banner">
+  <strong>🐜 Biomimicry:</strong> Ants deposit pheromones on shorter paths — more ants follow, trail strengthens, colony converges on the optimal route.
+  BioPath applies this exact mechanism to minimize fuel cost in delivery networks.
+</div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+    <div>
+      <h2>⚙ Config</h2>
+    </div>
+
+    <div>
+      <label>Cities: <strong id="citiesVal">10</strong></label>
+      <input type="range" id="cities" min="5" max="20" value="10"
+             oninput="document.getElementById('citiesVal').textContent=this.value">
+    </div>
+    <div>
+      <label>Ant Population: <strong id="antsVal">30</strong></label>
+      <input type="range" id="ants" min="10" max="60" value="30"
+             oninput="document.getElementById('antsVal').textContent=this.value">
+    </div>
+    <div>
+      <label>Generations: <strong id="itersVal">120</strong></label>
+      <input type="range" id="iters" min="20" max="300" value="120"
+             oninput="document.getElementById('itersVal').textContent=this.value">
+    </div>
+    <div>
+      <label>α Pheromone Weight: <strong id="alphaVal">1.0</strong></label>
+      <input type="range" id="alpha" min="0.5" max="3" step="0.1" value="1.0"
+             oninput="document.getElementById('alphaVal').textContent=parseFloat(this.value).toFixed(1)">
+    </div>
+    <div>
+      <label>β Heuristic Weight: <strong id="betaVal">2.5</strong></label>
+      <input type="range" id="beta" min="0.5" max="5" step="0.1" value="2.5"
+             oninput="document.getElementById('betaVal').textContent=parseFloat(this.value).toFixed(1)">
+    </div>
+    <div>
+      <label>Evaporation Rate: <strong id="evapVal">0.40</strong></label>
+      <input type="range" id="evap" min="0.1" max="0.9" step="0.05" value="0.40"
+             oninput="document.getElementById('evapVal').textContent=parseFloat(this.value).toFixed(2)">
+    </div>
+
+    <button class="run-btn" id="runBtn" onclick="runACO()">▶ Run Bio-Optimization</button>
+
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="status-text" id="statusText">Ready</div>
+
+    <div class="metric-box">
+      <div class="val" id="metricCost">—</div>
+      <div class="lbl">Best Fuel Cost</div>
+    </div>
+    <div class="metric-box">
+      <div class="val" id="metricSaving">—</div>
+      <div class="lbl">vs. Greedy Route</div>
+    </div>
+
+    <div>
+      <label>Optimal Visit Order</label>
+      <div class="route-display" id="routeDisplay">Run optimization to see route</div>
+    </div>
+  </div>
+
+  <!-- ── Main ── -->
+  <div class="main">
+    <div class="charts-row">
+      <div class="card">
+        <div class="card-title">🗺 Optimized Delivery Network</div>
+        <canvas id="mapCanvas" height="360"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">📉 Colony Convergence</div>
+        <canvas id="convergenceChart" height="360"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🧬 How ACO Mirrors Ant Behaviour</div>
+      <div class="param-grid">
+        <div style="font-size:0.85rem;color:#90a890;line-height:1.7">
+          <strong style="color:#00ffcc">Pheromone (α)</strong><br>
+          How strongly ants follow existing trails. High α = exploit known good routes.
+          Low α = explore more randomly. Mirrors real ant chemical signalling.
+        </div>
+        <div style="font-size:0.85rem;color:#90a890;line-height:1.7">
+          <strong style="color:#00ffcc">Heuristic (β)</strong><br>
+          How much ants prefer shorter edges. High β = ants greedily pick nearest city.
+          Balancing α and β is the core of ACO tuning.
+        </div>
+        <div style="font-size:0.85rem;color:#90a890;line-height:1.7">
+          <strong style="color:#00ffcc">Evaporation</strong><br>
+          Pheromone decays over time — prevents the colony from getting stuck in
+          local optima. Too low = stagnation. Too high = forgets good paths.
+        </div>
+        <div style="font-size:0.85rem;color:#90a890;line-height:1.7">
+          <strong style="color:#00ffcc">Real-World Impact</strong><br>
+          Optimizing delivery routes by 10–15% across logistics networks
+          reduces thousands of tonnes of CO₂ annually.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ACO Engine (JavaScript port of the C++ algorithm) ─────────────────
+class BioPathACO {
+  constructor(n, matrix, numAnts, iters, alpha, beta, evap) {
+    this.n       = n;
+    this.matrix  = matrix;
+    this.numAnts = numAnts;
+    this.iters   = iters;
+    this.alpha   = alpha;
+    this.beta    = beta;
+    this.evap    = evap;
+    this.pher    = Array.from({length:n}, () => new Array(n).fill(0.1));
+    this.history = [];
+  }
+
+  selectNext(curr, visited) {
+    let probs = new Array(this.n).fill(0);
+    let total = 0;
+    for (let j = 0; j < this.n; j++) {
+      if (!visited[j] && this.matrix[curr][j] > 1e-9) {
+        const p = Math.pow(this.pher[curr][j], this.alpha) *
+                  Math.pow(1.0 / this.matrix[curr][j], this.beta);
+        probs[j] = p;
+        total   += p;
+      }
+    }
+    if (total < 1e-12) {
+      for (let j = 0; j < this.n; j++) if (!visited[j]) return j;
+      return -1;
+    }
+    let spin = Math.random() * total, cum = 0;
+    for (let j = 0; j < this.n; j++) {
+      cum += probs[j];
+      if (spin <= cum) return j;
+    }
+    for (let j = this.n - 1; j >= 0; j--) if (!visited[j]) return j;
+    return -1;
+  }
+
+  updatePher(colony) {
+    for (let i = 0; i < this.n; i++)
+      for (let j = 0; j < this.n; j++)
+        this.pher[i][j] *= (1 - this.evap);
+    for (const ant of colony) {
+      if (ant.cost < 1e-9) continue;
+      const dep = 100.0 / ant.cost;
+      for (let k = 0; k < ant.path.length - 1; k++) {
+        const a = ant.path[k], b = ant.path[k+1];
+        this.pher[a][b] += dep;
+        this.pher[b][a] += dep;
+      }
+      const last = ant.path[ant.path.length-1], first = ant.path[0];
+      this.pher[last][first] += dep;
+      this.pher[first][last] += dep;
+    }
+  }
+
+  run(onProgress) {
+    let bestCost = Infinity, bestPath = [];
+    for (let t = 0; t < this.iters; t++) {
+      const colony = [];
+      for (let a = 0; a < this.numAnts; a++) {
+        const visited = new Array(this.n).fill(false);
+        const path = [0]; visited[0] = true;
+        let cost = 0;
+        while (path.length < this.n) {
+          const next = this.selectNext(path[path.length-1], visited);
+          if (next === -1) break;
+          cost += this.matrix[path[path.length-1]][next];
+          path.push(next); visited[next] = true;
+        }
+        cost += this.matrix[path[path.length-1]][path[0]];
+        colony.push({path, cost});
+        if (cost < bestCost) { bestCost = cost; bestPath = [...path]; }
+      }
+      this.updatePher(colony);
+      this.history.push(bestCost);
+      if (onProgress) onProgress(t, bestCost);
+    }
+    return {bestPath, bestCost};
+  }
+}
+
+// ── City coordinates & distance matrix ──────────────────────────────
+let cities = [], distMatrix = [], convChart = null;
+
+function generateCities(n) {
+  cities = [];
+  for (let i = 0; i < n; i++)
+    cities.push([Math.random() * 440 + 20, Math.random() * 320 + 20]);
+  distMatrix = Array.from({length:n}, (_, i) =>
+    Array.from({length:n}, (_, j) => {
+      const dx = cities[i][0] - cities[j][0];
+      const dy = cities[i][1] - cities[j][1];
+      return Math.sqrt(dx*dx + dy*dy);
+    })
+  );
+}
+
+// ── Draw map on canvas ───────────────────────────────────────────────
+function drawMap(path) {
+  const canvas = document.getElementById('mapCanvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0a1205';
+  ctx.fillRect(0, 0, W, H);
+
+  const n = cities.length;
+
+  // Faint background edges
+  ctx.strokeStyle = 'rgba(0,200,100,0.08)';
+  ctx.lineWidth = 0.8;
+  for (let i = 0; i < n; i++)
+    for (let j = i+1; j < n; j++) {
+      ctx.beginPath();
+      ctx.moveTo(cities[i][0], cities[i][1]);
+      ctx.lineTo(cities[j][0], cities[j][1]);
+      ctx.stroke();
+    }
+
+  if (path && path.length > 1) {
+    // Route
+    ctx.strokeStyle = '#00ffcc';
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = '#00ffcc';
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.moveTo(cities[path[0]][0], cities[path[0]][1]);
+    for (let k = 1; k < path.length; k++)
+      ctx.lineTo(cities[path[k]][0], cities[path[k]][1]);
+    ctx.lineTo(cities[path[0]][0], cities[path[0]][1]);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // Cities
+  for (let i = 0; i < n; i++) {
+    const [x, y] = cities[i];
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = path ? '#00ffcc' : '#40b080';
+    ctx.fill();
+    ctx.strokeStyle = '#0a1205';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#c0ffd8';
+    ctx.font = '11px monospace';
+    ctx.fillText(`C${i}`, x + 9, y - 5);
+  }
+}
+
+// ── Convergence chart ────────────────────────────────────────────────
+function initConvChart() {
+  const ctx = document.getElementById('convergenceChart').getContext('2d');
+  if (convChart) convChart.destroy();
+  convChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Best Fuel Cost',
+        data: [],
+        borderColor: '#00ffcc',
+        backgroundColor: 'rgba(0,255,204,0.07)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: '#607060', maxTicksLimit: 6 },
+          grid:  { color: 'rgba(255,255,255,0.05)' },
+          title: { display: true, text: 'Generation', color: '#607060', font: {size:11} }
+        },
+        y: {
+          ticks: { color: '#607060' },
+          grid:  { color: 'rgba(255,255,255,0.05)' },
+          title: { display: true, text: 'Fuel Cost', color: '#607060', font: {size:11} }
+        }
+      }
+    }
+  });
+}
+
+// ── Greedy baseline ──────────────────────────────────────────────────
+function greedyCost(n) {
+  const visited = new Array(n).fill(false);
+  let curr = 0, cost = 0;
+  visited[0] = true;
+  for (let step = 1; step < n; step++) {
+    let best = -1, bestD = Infinity;
+    for (let j = 0; j < n; j++)
+      if (!visited[j] && distMatrix[curr][j] < bestD)
+        { bestD = distMatrix[curr][j]; best = j; }
+    cost += bestD; curr = best; visited[best] = true;
+  }
+  cost += distMatrix[curr][0];
+  return cost;
+}
+
+// ── Main run ─────────────────────────────────────────────────────────
+function runACO() {
+  const n      = parseInt(document.getElementById('cities').value);
+  const ants   = parseInt(document.getElementById('ants').value);
+  const iters  = parseInt(document.getElementById('iters').value);
+  const alpha  = parseFloat(document.getElementById('alpha').value);
+  const beta   = parseFloat(document.getElementById('beta').value);
+  const evap   = parseFloat(document.getElementById('evap').value);
+
+  generateCities(n);
+  drawMap(null);
+  initConvChart();
+
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('statusText').textContent = 'Simulating ants...';
+  document.getElementById('metricCost').textContent = '...';
+  document.getElementById('metricSaving').textContent = '...';
+  document.getElementById('routeDisplay').textContent = 'Running...';
+
+  const aco = new BioPathACO(n, distMatrix, ants, iters, alpha, beta, evap);
+  const greedyRef = greedyCost(n);
+
+  // Run in chunks so UI stays responsive
+  let t = 0;
+  const CHUNK = 10;
+
+  function step() {
+    const end = Math.min(t + CHUNK, iters);
+    // run chunk
+    for (; t < end; t++) {
+      const colony = [];
+      for (let a = 0; a < aco.numAnts; a++) {
+        const visited = new Array(aco.n).fill(false);
+        const path = [0]; visited[0] = true;
+        let cost = 0;
+        while (path.length < aco.n) {
+          const next = aco.selectNext(path[path.length-1], visited);
+          if (next === -1) break;
+          cost += aco.matrix[path[path.length-1]][next];
+          path.push(next); visited[next] = true;
+        }
+        cost += aco.matrix[path[path.length-1]][path[0]];
+        colony.push({path, cost});
+      }
+      aco.updatePher(colony);
+    }
+
+    const pct = (t / iters) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('statusText').textContent =
+      `Generation ${t} / ${iters}`;
+
+    // Update convergence chart with full history so far
+    // Rebuild from scratch each chunk (fast enough)
+    const bestSoFar = [];
+    let best = Infinity;
+    // Re-run history tracking — we need to store it
+    // Actually track in aco.history (already does this in full run)
+    // For chunked: we track globally
+    if (t === CHUNK) aco.history = [];
+    // Already pushed above — skip, use direct approach below
+
+    if (t >= iters) {
+      // Final
+      const {bestPath, bestCost} = (() => {
+        // Re-run full to get final result (fast)
+        const aco2 = new BioPathACO(n, distMatrix, ants, iters, alpha, beta, evap);
+        return aco2.run();
+      })();
+
+      // Update convergence chart
+      convChart.data.labels    = aco2ref.history.map((_, i) => i);
+      convChart.data.datasets[0].data = aco2ref.history;
+      convChart.update();
+
+      drawMap(bestPath);
+
+      document.getElementById('metricCost').textContent =
+        bestCost.toFixed(1);
+      const saving = ((greedyRef - bestCost) / greedyRef * 100);
+      document.getElementById('metricSaving').textContent =
+        (saving > 0 ? '+' : '') + saving.toFixed(1) + '% better';
+      document.getElementById('routeDisplay').textContent =
+        bestPath.map(c => `C${c}`).join(' → ') + ` → C${bestPath[0]}`;
+      document.getElementById('runBtn').disabled = false;
+      document.getElementById('statusText').textContent = '✅ Done';
+      document.getElementById('progressBar').style.width = '100%';
+    } else {
+      requestAnimationFrame(step);
+    }
+  }
+
+  // Actually: just run the full ACO at once (it's fast in JS for ≤20 cities)
+  // then animate the chart
+  const aco2 = new BioPathACO(n, distMatrix, ants, iters, alpha, beta, evap);
+  const {bestPath, bestCost} = aco2.run();
+
+  // Animate convergence chart
+  let frame = 0;
+  const totalFrames = Math.min(iters, 60);
+  const step2 = aco2.history.length / totalFrames;
+
+  function animateChart() {
+    frame++;
+    const idx = Math.min(Math.floor(frame * step2), aco2.history.length);
+    convChart.data.labels = Array.from({length: idx}, (_, i) => i);
+    convChart.data.datasets[0].data = aco2.history.slice(0, idx);
+    convChart.update('none');
+
+    const pct = (idx / aco2.history.length) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('statusText').textContent =
+      `Generation ${idx} / ${iters}`;
+
+    if (idx < aco2.history.length) {
+      requestAnimationFrame(animateChart);
+    } else {
+      drawMap(bestPath);
+      document.getElementById('metricCost').textContent =
+        bestCost.toFixed(1);
+      const saving = ((greedyRef - bestCost) / greedyRef * 100);
+      document.getElementById('metricSaving').textContent =
+        (saving > 0 ? '+' : '') + Math.abs(saving).toFixed(1) + '% vs greedy';
+      document.getElementById('routeDisplay').textContent =
+        bestPath.map(c => `C${c}`).join(' → ') + ` → C${bestPath[0]}`;
+      document.getElementById('runBtn').disabled = false;
+      document.getElementById('statusText').textContent = '✅ Optimization complete';
+    }
+  }
+
+  // Set canvas size properly
+  const canvas = document.getElementById('mapCanvas');
+  canvas.width  = canvas.offsetWidth  || 480;
+  canvas.height = 360;
+  drawMap(null);
+
+  requestAnimationFrame(animateChart);
+}
+
+// ── Init on load ─────────────────────────────────────────────────────
+window.onload = () => {
+  generateCities(parseInt(document.getElementById('cities').value));
+  const canvas = document.getElementById('mapCanvas');
+  canvas.width  = 480;
+  canvas.height = 360;
+  drawMap(null);
+  initConvChart();
+};
+</script>
+</body>
+</html>
