@@ -1,46 +1,112 @@
-# BioPath-Optimizer
-Bio-Path is a nature-inspired logistics optimizer using Ant Colony Optimization (ACO) to minimize carbon footprints and maximize fuel efficiency in delivery routes.
-# 🌿 Bio-Path: Nature-Inspired Logistics Optimization
+# 🍃 BioPath Optimizer
 
-**AlgoFest Hackathon 2026 | Track: Sustainable Technology / Social Good**
-
-Bio-Path is a high-performance logistics engine that moves beyond simple "shortest path" navigation. Inspired by the collective intelligence of ant colonies, Bio-Path uses **Ant Colony Optimization (ACO)** to solve complex delivery routing problems with a focus on **fuel efficiency** and **carbon footprint reduction**.
+> **Nature-inspired route optimization for carbon-neutral logistics**
+> Built for AlgoFest Hackathon 2026
 
 ---
 
-## 🚀 The Problem
-Standard GPS systems prioritize distance or time. However, in logistics, the "fastest" route often ignores fuel-heavy factors like elevation, traffic congestion, and vehicle load. This leads to unnecessary CO2 emissions and increased operational costs.
+## 🐜 The Biomimicry Idea
 
-## 🐜 Our Solution: The Bio-Path Engine
-We looked at nature to solve human waste. Ants find the most efficient path to food using pheromone trails—a biological algorithm that naturally optimizes for the least effort. 
+Ant colonies solve the Travelling Salesman Problem every time they find food.
+They leave pheromone trails — the shorter the path, the stronger the trail,
+the more ants follow it. Over generations, the colony converges on the optimal route.
 
-Bio-Path replicates this behavior using:
-* **C++ Core Engine:** A lightning-fast computational "brain" that simulates thousands of agents (ants) to find the global optimum.
-* **Multi-Factor Heuristics:** Unlike basic maps, our algorithm weighs pheromone strength against **fuel-cost matrices** (including slopes and traffic).
-* **Interactive Python Dashboard:** A user-friendly interface to visualize real-time route optimization.
+**BioPath Optimizer applies this exact mechanism — Ant Colony Optimization (ACO) —
+to real-world delivery route planning**, minimizing fuel consumption and CO₂ emissions.
 
 ---
 
-## 🛠️ Built With
-* **C++:** For the high-performance ACO algorithm (Algorithmic Excellence).
-* **Python (Streamlit):** For the interactive UI and visualization.
-* **DeepSeek/Gemini/Copilot:** For AI-assisted architecture and debugging.
-* **Matplotlib/Pydeck:** For spatial data visualization.
+## 🚀 Features
+
+- **ACO Engine in Python** — fully vectorized with NumPy for speed
+- **Reference implementation in C++** — demonstrating algorithmic correctness
+- **Interactive Streamlit UI** — configure ant population, generations, pheromone weights
+- **Live convergence chart** — watch the colony learn in real time
+- **Route visualization** — Plotly map of the optimized delivery network
+- **Efficiency metric** — shows % improvement vs. naive random routing
 
 ---
 
-## 📈 Impact
-By optimizing for fuel rather than just distance, Bio-Path can reduce logistics-related emissions by up to **15-20%**, making "Smart Cities" truly sustainable.
+## 📁 Project Structure
+
+```
+BioPath-Optimizer/
+├── core/
+│   └── optimizer.py        # ACO engine (Python/NumPy)
+├── biopath_optimizer.cpp   # Reference C++ implementation
+├── app.py                  # Streamlit web interface
+├── requirements.txt
+└── README.md
+```
 
 ---
 
-## 🛠️ How to Run
-1. **Clone the Repo:** `git clone https://github.com/Areeba-Qammar/BioPath-Optimizer.git`
-2. **Compile Engine:** `g++ core/bio_optimizer.cpp -o engine`
-3. **Run Interface:** `streamlit run interface/app.py`
+## ⚙️ Setup & Run
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Launch the app
+streamlit run app.py
+```
+
+**C++ (optional, for reference):**
+```bash
+g++ -O2 -o biopath biopath_optimizer.cpp
+./biopath
+```
 
 ---
 
-## 👥 The Team
-* **Areeba Qammar:** Lead Architect & Algorithm Developer 
-* **Black Rose:** UI/UX & Data Visualization
+## 📦 Requirements
+
+```
+streamlit
+numpy
+plotly
+```
+
+Save as `requirements.txt`.
+
+---
+
+## 🧠 Algorithm — How ACO Works
+
+| Parameter | Meaning | Default |
+|-----------|---------|---------|
+| α (alpha) | Pheromone weight — how much ants trust existing trails | 1.0 |
+| β (beta)  | Heuristic weight — how much ants prefer shorter edges | 2.0 |
+| Evaporation | Trail decay rate — prevents getting stuck in local optima | 0.5 |
+| Ants | Number of agents exploring per generation | 20 |
+
+**Each generation:**
+1. Every ant constructs a full route using roulette-wheel probabilistic selection
+2. Pheromones evaporate by `(1 - evaporation_rate)`
+3. Ants reinforce edges on their route proportional to `Q / route_cost`
+4. Best route so far is tracked across all generations
+
+---
+
+## 🌍 Real-World Impact
+
+Optimizing delivery routes by even 10–15% across a mid-sized logistics company
+reduces thousands of tonnes of CO₂ annually. BioPath demonstrates that
+**solutions already exist in nature** — we just need to translate them into code.
+
+---
+
+## 👥 Team
+
+| Name | Role |
+|------|------|
+| Areeba Qammar | Core algorithm, C++ implementation, presentation|
+| Hifza Sultan | UI/UX, visualization, architecture  |
+
+---
+
+## 🏷️ Track
+
+**Artificial Intelligence & Machine Learning** · **Sustainable Technology**
+
+*AlgoFest Hackathon 2026*
