@@ -95,8 +95,8 @@ BioPath shows that **the solution already exists in nature**.
 
 | Name | Role |
 |------|------|
-| Areeba Qamar | C++ engine, algorithm, architecture |
-| Hifza Sultan | Web demo, visualization, presentation |
+| Areeba Qamar | C++ engine, algorithm, presentation|
+| Hifza Sultan | Web demo, visualization, architecture |
 
 ---
 
