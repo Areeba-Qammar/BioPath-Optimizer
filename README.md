@@ -1,29 +1,31 @@
 # 🍃 BioPath Optimizer
 
-> **Nature-inspired route optimization for carbon-neutral logistics**
-> Built for AlgoFest Hackathon 2026
+> **Ant Colony Optimization for carbon-neutral delivery route planning**
+> AlgoFest Hackathon 2026 · Track: AI/ML + Sustainable Technology
 
 ---
 
 ## 🐜 The Biomimicry Idea
 
-Ant colonies solve the Travelling Salesman Problem every time they find food.
-They leave pheromone trails — the shorter the path, the stronger the trail,
-the more ants follow it. Over generations, the colony converges on the optimal route.
+Ant colonies solve the Travelling Salesman Problem every time they forage.
+They deposit pheromone on paths — shorter paths get stronger trails,
+more ants follow them, colony converges on the optimal route over generations.
 
-**BioPath Optimizer applies this exact mechanism — Ant Colony Optimization (ACO) —
-to real-world delivery route planning**, minimizing fuel consumption and CO₂ emissions.
+**BioPath Optimizer translates this exact mechanism into C++ to minimize
+fuel consumption and CO₂ emissions in real-world delivery networks.**
 
 ---
 
 ## 🚀 Features
 
-- **ACO Engine in Python** — fully vectorized with NumPy for speed
-- **Reference implementation in C++** — demonstrating algorithmic correctness
-- **Interactive Streamlit UI** — configure ant population, generations, pheromone weights
-- **Live convergence chart** — watch the colony learn in real time
-- **Route visualization** — Plotly map of the optimized delivery network
-- **Efficiency metric** — shows % improvement vs. naive random routing
+| Feature | Detail |
+|---------|--------|
+| C++ ACO Engine | Full Ant Colony Optimization — roulette-wheel selection, pheromone evaporation & reinforcement |
+| Interactive Web Demo | `index.html` — no install needed, open in any browser |
+| Live Convergence Chart | Watch the colony learn in real time |
+| Tunable Parameters | α, β, evaporation, ant count, generations |
+| JSON Export | C++ engine exports `results_Ncity.json` for further analysis |
+| Two Test Cases | 5-city and 10-city networks included |
 
 ---
 
@@ -31,68 +33,61 @@ to real-world delivery route planning**, minimizing fuel consumption and CO₂ e
 
 ```
 BioPath-Optimizer/
-├── core/
-│   └── optimizer.py        # ACO engine (Python/NumPy)
-├── biopath_optimizer.cpp   # Reference C++ implementation
-├── app.py                  # Streamlit web interface
-├── requirements.txt
+├── biopath_optimizer.cpp   # Core C++ ACO engine
+├── index.html              # Interactive web demo (open directly in browser)
+├── results_5city.json      # Output from C++ (auto-generated on run)
+├── results_10city.json     # Output from C++ (auto-generated on run)
 └── README.md
 ```
 
 ---
 
-## ⚙️ Setup & Run
+## ⚙️ How to Run
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Launch the app
-streamlit run app.py
+### Option 1 — Web Demo (no install)
+```
+Open index.html in any browser
+Adjust sliders → click Run Bio-Optimization
 ```
 
-**C++ (optional, for reference):**
+### Option 2 — C++ Engine
 ```bash
-g++ -O2 -o biopath biopath_optimizer.cpp
+g++ -O2 -std=c++17 -o biopath biopath_optimizer.cpp
 ./biopath
 ```
+Outputs best route, fuel cost, and exports JSON for both test cases.
 
 ---
 
-## 📦 Requirements
+## 🧠 Algorithm
 
 ```
-streamlit
-numpy
-plotly
+For each generation:
+  Each ant builds a tour using roulette-wheel selection:
+    P(i→j) = [pheromone(i,j)^α × (1/distance(i,j))^β] / Σ all unvisited
+
+  Pheromone update:
+    evaporation:    pheromone[i][j] *= (1 - ρ)
+    reinforcement:  pheromone[i][j] += Q / tour_cost   (for each edge used)
+
+  Track global best tour across all generations
 ```
 
-Save as `requirements.txt`.
-
----
-
-## 🧠 Algorithm — How ACO Works
-
-| Parameter | Meaning | Default |
-|-----------|---------|---------|
-| α (alpha) | Pheromone weight — how much ants trust existing trails | 1.0 |
-| β (beta)  | Heuristic weight — how much ants prefer shorter edges | 2.0 |
-| Evaporation | Trail decay rate — prevents getting stuck in local optima | 0.5 |
-| Ants | Number of agents exploring per generation | 20 |
-
-**Each generation:**
-1. Every ant constructs a full route using roulette-wheel probabilistic selection
-2. Pheromones evaporate by `(1 - evaporation_rate)`
-3. Ants reinforce edges on their route proportional to `Q / route_cost`
-4. Best route so far is tracked across all generations
+| Parameter | Symbol | Default | Effect |
+|-----------|--------|---------|--------|
+| Pheromone weight | α | 1.0 | Higher = exploit known trails more |
+| Heuristic weight | β | 2.5 | Higher = prefer shorter edges greedily |
+| Evaporation | ρ | 0.4 | Higher = forget faster, explore more |
+| Ants | — | 30 | More ants = better coverage per generation |
+| Generations | — | 150 | More = closer to global optimum |
 
 ---
 
 ## 🌍 Real-World Impact
 
-Optimizing delivery routes by even 10–15% across a mid-sized logistics company
-reduces thousands of tonnes of CO₂ annually. BioPath demonstrates that
-**solutions already exist in nature** — we just need to translate them into code.
+A 10–15% fuel reduction across a mid-sized logistics fleet
+eliminates thousands of tonnes of CO₂ annually.
+BioPath shows that **the solution already exists in nature**.
 
 ---
 
@@ -100,13 +95,11 @@ reduces thousands of tonnes of CO₂ annually. BioPath demonstrates that
 
 | Name | Role |
 |------|------|
-| Areeba Qammar | Core algorithm, C++ implementation, presentation|
-| Hifza Sultan | UI/UX, visualization, architecture  |
+| Areeba Qammar | C++ engine, algorithm, architecture |
+| Hifza Sultan | Web demo, visualization, presentation |
 
 ---
 
-## 🏷️ Track
+## 🏷️ Tracks
 
-**Artificial Intelligence & Machine Learning** · **Sustainable Technology**
-
-*AlgoFest Hackathon 2026*
+**Artificial Intelligence & Machine Learning · Sustainable Technology**
